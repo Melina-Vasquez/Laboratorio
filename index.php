@@ -25,18 +25,21 @@ if (!isset($conexion)) {
 
 
 <body>
-<header class="container-fluid bg-dark text-white text-center">
+    <header class="container-fluid bg-dark text-white text-center">
         <div class="container">
 
             <nav class="navbar navbar-expand-xl">
                 <div class="container-fluid">
 
                     <!-- logo -->
-                  <h1>
-                      <a style="color: rgb(255 255 255);text-decoration: none;" href="https://www.servicios.com/">Laboratorio Tu Hermana </a>
-                  </h1>
+                    <h1>
+                        <a style="color: rgb(255 255 255);text-decoration: none;" href="https://www.servicios.com/">Laboratorio Tu Hermana </a>
+                    </h1>
+                    <h2>
+                        <a style="color: rgb(255 255 255);text-decoration: none;" href="">Documentación</a>
+                    </h2>
 
-</header>
+    </header>
 
     <h1 class="text-center p-3">Acceso Administrador</h1>
 
@@ -94,7 +97,7 @@ if (!isset($conexion)) {
                 <button class="btn btn-outline-secondary" type="button" id="btnBuscarId"><i class="fas fa-search"></i></button>
             </div>
 
-            <table class="table">
+            <table class="table" id="tablaMaterias">
                 <thead class="bg-info">
                     <tr>
                         <th scope="col">IdMateria</th>
@@ -144,57 +147,86 @@ if (!isset($conexion)) {
             })
         })()
 
-        // Función para cargar y mostrar las materias según la búsqueda
-        //de la linea 134 a 55 es lo que ya estaba
-        /*     function cargarMaterias(id) {
-                 $.ajax({
-                     url: 'buscar_materia.php',
-                     type: 'GET',
-                     data: { ID: id },
-                     dataType: 'html',
-                     success: function(response) {
-                         console.log(response);
-                         $('#table-group-divider').html(response);
-                     }
-                 });
-             }
+        function buscarMateria() {
+            var id = document.getElementById('idBusqueda').value; // Obtener el valor del campo de búsqueda
 
-             // Cargar todas las materias al cargar la página
-             $(document).ready(function() {
-                 // Buscar al hacer clic en el botón de búsqueda
-                 $('#btnBuscarId').click(function() {
-                     var busqueda = document.getElementById("idBusqueda").value
-                     cargarMaterias(busqueda);
-                 });
-             });*/
+            var xhr = new XMLHttpRequest();
+            
+            if (id != "") {
+                xhr.open('GET', './buscar_materia.php?ID=' + encodeURIComponent(id), true);
+            } else {
+                xhr.open('GET', './buscar_materia.php', true);
+            }
 
 
-        //Función para cargar y mostrar las materias según la búsqueda
-
-        function cargarMaterias() {
-            var id = $('#idBusqueda').val(); // Obtener el valor del campo de búsqueda
-
-            $.ajax({
-                url: 'buscar_materia.php',
-                type: 'GET',
-                data: {
-                    ID: id
-                },
-                dataType: 'html',
-                success: function(response) {
-                    debugger;
-                    console.log(response);
-                    $('#table-group-divider').html(response);
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error al cargar las materias:', error);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    
+                    var response = JSON.parse(xhr.responseText);
+                    var tabla = document.getElementById('tablaMaterias');
+                    mostrarMaterias(tabla, response)
+                } else {
+                    alert('Error en la solicitud');
                 }
-            });
+            };
+
+            xhr.send();
+        }
+
+        function limpiarTabla(tabla) {
+            // Eliminar todas las filas, excepto la primera (la cabecera)
+            while (tabla.rows.length > 1) {
+                tabla.deleteRow(1);
+            }
+        }
+
+        function mostrarMaterias(tabla, materias) {
+            // Limpiar los datos existentes en la tabla
+            limpiarTabla(tabla);
+            
+            if (materias.length > 1) {
+                // Recorrer el array de materias y agregar cada una a la tabla
+                materias.forEach(materia => {
+                    // Crear nueva fila y llenarla con los datos del JSON
+                    var nuevaFila = tabla.insertRow();
+                    nuevaFila.insertCell().textContent = materia.idMateria;
+                    nuevaFila.insertCell().textContent = materia.materiaNombre;
+                    nuevaFila.insertCell().textContent = materia.estado;
+                    nuevaFila.insertCell().textContent = materia.descripcion;
+
+                    // Crear celdas para los botones de editar y eliminar
+                    var celdaAcciones = nuevaFila.insertCell();
+                    celdaAcciones.innerHTML = `
+                    <a href="./modificar.php?id=${materia.idMateria}" class="btn btn-small btn-warning">
+                        <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                    </a>
+                    <a href="./eliminar.php?id=${materia.idMateria}" onclick="return confirmar()" class="btn btn-small btn-danger">
+                        <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                    </a>`;
+                });
+            } else {
+                var nuevaFila = tabla.insertRow();
+                nuevaFila.insertCell().textContent = materias.idMateria;
+                nuevaFila.insertCell().textContent = materias.materiaNombre;
+                nuevaFila.insertCell().textContent = materias.estado;
+                nuevaFila.insertCell().textContent = materias.descripcion;
+
+                // Crear celdas para los botones de editar y eliminar
+                var celdaAcciones = nuevaFila.insertCell();
+                celdaAcciones.innerHTML = `
+                <a href="./modificar.php?id=${materias.idMateria}" class="btn btn-small btn-warning">
+                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                </a>
+                <a href="./eliminar.php?id=${materias.idMateria}" onclick="return confirmar()" class="btn btn-small btn-danger">
+                    <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                </a>`;
+            }
+
         }
 
         // Buscar al hacer clic en el botón de búsqueda
         $('#btnBuscarId').click(function() {
-            cargarMaterias(); // Llamar a la función sin parámetros para realizar la búsqueda
+            buscarMateria(); // Llamar a la función sin parámetros para realizar la búsqueda
         });
 
         function confirmar() {
@@ -202,11 +234,11 @@ if (!isset($conexion)) {
         }
     </script>
     <footer class="container-fluid bg-dark text-white text-center">
-  
+
         <ul class="linkFooter">
-        <li><a href="https://www.servicios.com/"><i class=""></i>Contactanos: soporte@servicios.com</a></li>
+            <li><a href="https://www.servicios.com/"><i class=""></i>Contactanos: soporte@servicios.com</a></li>
         </ul>
-      </div>
+        </div>
 
         <div class="container">
             <p class="fw-lighter mb-0">&copy; 2024 - Derechos Reservados</p>

@@ -66,6 +66,7 @@ if ($sql->num_rows > 0) {
         </div>
 
         <button class="btn btn-primary mt-3" type="submit" name="btnModificarMateria" value="ok">Modificar Materia</button>
+        <button class="btn btn-primary mt-3" type="button" onclick="window.location.href='index.php'">Cancelar</button>
 
     </form>
 </body>

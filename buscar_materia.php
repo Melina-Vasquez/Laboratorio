@@ -1,17 +1,50 @@
 <?php
 include './conexion.php';
 
-$buscador=mysqli_query("select * from materia where MateriaNombre like lower ('%".$_POST["buscar"]."%') or tema like lower ('%".$_POST["buscar"]."%')");
-$numero = mysqli_num_rows($buscador);
-?>
+if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    if (isset($_GET['ID'])) {
+        $id = intval($_GET['ID']);
+        $sql = "SELECT * FROM materia WHERE IdMateria = $id";
+        $resultado = $conexion->query($sql);
 
-<h5 class="card-tittle"> Resultados encontrados (<?php echo $numero?>): </h5>
+        if ($resultado->num_rows > 0) {
+            $row = $resultado->fetch_assoc();
+            $response = [
+                'idMateria' => $row['IdMateria'],
+                'materiaNombre' => $row['MateriaNombre'],
+                'estado' => $row['Estado'],
+                'descripcion' => $row['Descripcion']
+            ];
+        } else {
+            $response = ['success' => false, 'error' => 'Id no registrado'];
+            http_response_code(500);
+        }
+    } else {
+        $resultado = $conexion->query("SELECT * FROM materia");
+        $response = [];
 
-<?php while($resultado = mysqli_fetch_assoc($buscador)){ ?>
-    <p class="card-text"><?php echo $resultado["MateriaNombre"]: ?> - <?php echo $resultado["Descripcion"] ?></p>
+        if ($resultado->num_rows > 0) {
+            $row = $resultado->fetch_assoc();
+            while ($row = $resultado->fetch_assoc()) {
+                $response[] = [
+                    'idMateria' => $row['IdMateria'],
+                    'materiaNombre' => $row['MateriaNombre'],
+                    'estado' => $row['Estado'],
+                    'descripcion' => $row['Descripcion']
+                ];
+            }
+        } else {
+            $response = ['success' => false, 'error' => 'Id no registrado'];
+            http_response_code(500);
+        }
+    }
+} else {
+    echo "<div class='alert alert-warning'> No se encontro el Id ingresado o no existe</div>";
+}
 
+$conexion->close();
 
+header('Content-Type: application/json');
+echo json_encode($response);
 
-<?php } ?>
-
-
+exit();
