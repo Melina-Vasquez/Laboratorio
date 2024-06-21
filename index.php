@@ -36,7 +36,7 @@ if (!isset($conexion)) {
                         <a style="color: rgb(255 255 255);text-decoration: none;" href="https://www.servicios.com/">Laboratorio Tu Hermana </a>
                     </h1>
                     <h2>
-                        <a style="color: rgb(255 255 255);text-decoration: none;" href="">Documentación</a>
+                        <a style="color: rgb(255 255 255);text-decoration: none;" href="https://drive.google.com/file/d/1htwC2Izth2WHPjXNFo30zzdVv80xJrxe/view?usp=drive_link">Documentación</a>
                     </h2>
 
     </header>
